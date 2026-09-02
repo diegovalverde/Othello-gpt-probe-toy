@@ -7,6 +7,12 @@ output/
 .DS_Store
 
 *.log
+__pycache__/
+*.pyc
 
 assets/model/*.onnx
 assets/model/*.wasm
+public/model/*.onnx
+public/model/*.onnx.data
+public/ort/*.mjs
+public/ort/*.wasm

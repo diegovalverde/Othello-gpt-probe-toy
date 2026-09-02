@@ -127,10 +127,21 @@ select {
   cursor: pointer;
 }
 
+.move-input-row button:disabled {
+  cursor: wait;
+  opacity: 0.64;
+}
+
 .input-error {
   margin: 8px 0 0;
   color: var(--probe-legality);
   font-weight: 650;
+}
+
+.runtime-loading {
+  margin: 8px 0 16px;
+  color: var(--muted);
+  font-weight: 700;
 }
 
 .header-controls {

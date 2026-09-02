@@ -5,12 +5,12 @@
 The app should feel like a clean research instrument with a playful neural layer. It is not a landing page, not a notebook, and not a dark sci-fi dashboard. The interface should make the probe pipeline legible at a glance:
 
 ```text
-move string -> Othello-GPT residual stream -> L4 board -> post6 legality -> post7 preference -> logits diagnostic
+move string -> Othello-GPT residual stream -> L4 activation -> post6 legality -> post7 preference -> logits diagnostic
 ```
 
 The user should immediately understand three things:
 
-- The board is decoded from model internals.
+- The board is rendered from the move string until the real L4 board probe head is recovered.
 - Legal moves are highlighted by probe-derived scores.
 - The selected move comes from the preference probe, while final logits are only a comparison.
 
@@ -45,7 +45,7 @@ Do not use decorative blobs, bokeh, mascot art, or background gradients.
 
 Every visual cue must preserve the distinction between:
 
-- `L4 board probe`: board-state reconstruction.
+- `L4 activation`: exported model-internal state; board-state probe head pending.
 - `post6 legality probe`: legal mask prediction.
 - `post7 preference probe`: legal-move preference ranking.
 - `final logits`: diagnostic comparison, not the selector.
@@ -186,7 +186,7 @@ Input tokens -> L0 -> L1 -> L2 -> L3 -> L4 -> L5 -> post6 -> post7 -> logits
 
 Highlight these nodes:
 
-- `L4 board probe`
+- `L4 activation`
 - `post6 legality probe`
 - `post7 preference probe`
 - `logits diagnostic`
@@ -200,7 +200,7 @@ Each highlighted node gets:
 
 Example labels:
 
-- `L4 board probe`: `reconstructs board state`
+- `L4 activation`: `board-state head pending`
 - `post6 legality probe`: `predicts legal mask`
 - `post7 preference probe`: `ranks legal moves`
 - `logits diagnostic`: `comparison only`
@@ -276,7 +276,7 @@ Hovering a board square should show:
 
 - Square label.
 - Simulator state.
-- L4 board probe state and confidence.
+- L4 activation metadata; once recovered, L4 board-probe state and confidence.
 - Simulator legal yes/no.
 - Direct post6 legality score.
 - Ray-max legality score if enabled.
@@ -384,7 +384,7 @@ Represent probe stages as data:
 
 ```ts
 const PROBE_STAGES = [
-  { id: "l4-board", label: "L4 board probe", color: "board", purpose: "reconstructs board state" },
+  { id: "l4-activation", label: "L4 activation", color: "board", purpose: "board head pending" },
   { id: "post6-legality", label: "post6 legality probe", color: "legality", purpose: "predicts legal mask" },
   { id: "post7-preference", label: "post7 preference probe", color: "preference", purpose: "ranks legal moves" },
   { id: "logits", label: "logits diagnostic", color: "logits", purpose: "comparison only" },
@@ -415,4 +415,3 @@ Before calling the design implemented:
 - The app still works if there are only two legal moves.
 - The app still works if the probe choice disagrees with final logits.
 - The app still works with reduced motion enabled.
-

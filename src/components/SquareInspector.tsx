@@ -26,8 +26,8 @@ export function SquareInspector({ square, showDiagnostics }: SquareInspectorProp
           <dd>{square.simulatorState}</dd>
         </div>
         <div>
-          <dt>L4 board probe</dt>
-          <dd>{square.probeState} ({Math.round(square.probeConfidence * 100)}%)</dd>
+          <dt>Board state</dt>
+          <dd>{square.simulatorState}</dd>
         </div>
         <div>
           <dt>post6 legality</dt>

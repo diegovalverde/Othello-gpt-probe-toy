@@ -4,7 +4,7 @@ export interface ProbeRuntime {
   id: string;
   label: string;
   description: string;
-  analyze(input: string, legalitySource: LegalitySource): ProbeAnalysis;
+  analyze(input: string, legalitySource: LegalitySource): Promise<ProbeAnalysis>;
 }
 
 export interface AnalysisResult {
@@ -12,14 +12,15 @@ export interface AnalysisResult {
   error: string | null;
 }
 
-export function runAnalysis(
+export async function runAnalysis(
   runtime: ProbeRuntime,
   input: string,
   legalitySource: LegalitySource,
-): AnalysisResult {
+): Promise<AnalysisResult> {
   try {
+    const analysis = await runtime.analyze(input, legalitySource);
     return {
-      analysis: runtime.analyze(input, legalitySource),
+      analysis,
       error: null,
     };
   } catch (err) {

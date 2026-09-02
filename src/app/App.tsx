@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Activity, Play, SlidersHorizontal } from "lucide-react";
 import { BoardView } from "../components/BoardView";
 import { DirectionalProbePanel } from "../components/DirectionalProbePanel";
@@ -6,9 +6,9 @@ import { MoveRanking } from "../components/MoveRanking";
 import { ProbeRail } from "../components/ProbeRail";
 import { StageDetails } from "../components/StageDetails";
 import { SquareInspector } from "../components/SquareInspector";
-import { DEFAULT_INPUT, fixtureRuntime } from "../inference/fixtureRuntime";
+import { BrowserOnnxRuntime, DEFAULT_INPUT } from "../inference/browserRuntime";
 import { runAnalysis } from "../inference/runtime";
-import type { BoardSquareView, LegalitySource } from "../types/probe";
+import type { BoardSquareView, LegalitySource, ProbeAnalysis } from "../types/probe";
 
 export function App() {
   const [moveString, setMoveString] = useState(DEFAULT_INPUT);
@@ -17,12 +17,27 @@ export function App() {
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [selectedSquare, setSelectedSquare] = useState<BoardSquareView | null>(null);
   const [activeStage, setActiveStage] = useState("post7");
+  const [analysis, setAnalysis] = useState<ProbeAnalysis | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
 
-  const runtime = fixtureRuntime;
-  const { analysis, error } = useMemo(
-    () => runAnalysis(runtime, submittedMoveString, legalitySource),
-    [runtime, submittedMoveString, legalitySource],
-  );
+  const runtime = useMemo(() => new BrowserOnnxRuntime(), []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsRunning(true);
+    runAnalysis(runtime, submittedMoveString, legalitySource).then((result) => {
+      if (cancelled) {
+        return;
+      }
+      setAnalysis(result.analysis);
+      setError(result.error);
+      setIsRunning(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [runtime, submittedMoveString, legalitySource]);
 
   const selected =
     selectedSquare && analysis?.board.find((square) => square.square === selectedSquare.square)
@@ -71,7 +86,7 @@ export function App() {
               onChange={(event) => setMoveString(event.target.value)}
               spellCheck={false}
             />
-            <button type="submit" aria-label="Run probes">
+            <button type="submit" aria-label="Run probes" disabled={isRunning}>
               <Play size={18} fill="currentColor" />
             </button>
           </div>
@@ -99,6 +114,8 @@ export function App() {
           </label>
         </div>
       </header>
+
+      {isRunning && <p className="runtime-loading">Loading ONNX runtime and running probes...</p>}
 
       {analysis && (
         <>

@@ -44,17 +44,14 @@ User move string
   -> TypeScript parser/tokenizer
   -> TypeScript Othello simulator validation
   -> ONNX Othello-GPT inference in browser
-  -> Extract final-token activations and logits
-  -> Apply static probe weights in TypeScript
+  -> Extract final-token activations, probe scores, and logits
   -> Render board, legal moves, ranked probe choice, and diagnostics
 ```
 
-The browser loads four static asset groups:
+The browser loads generated static runtime assets:
 
-- `model/othello_gpt_probe_runtime.onnx`
-- `probes/board_l4.json` or binary tensor files
-- `probes/direct_legality_post6.json` or binary tensor files
-- `probes/preference_post7.json` or binary tensor files
+- `model/othello-gpt-activations.onnx`
+- `ort/ort-wasm-simd-threaded.*` from `onnxruntime-web`
 
 ## Model Export
 
@@ -63,15 +60,18 @@ Create a small PyTorch export wrapper around Othello-GPT that returns only the t
 - `blocks.4.hook_resid_post[:, -1, :]`
 - `blocks.6.hook_resid_post[:, -1, :]`
 - `blocks.7.hook_resid_post[:, -1, :]`
+- learned post6 direct-legality scores
+- learned post6 capture-ray scores
+- learned post7 preference scores
 - `logits[:, -1, :]`
 
 Export that wrapper to ONNX with dynamic sequence length up to Othello-GPT's context limit.
 
 The exported graph should not expose the full cache. Returning only required activations keeps the browser artifact smaller and the UI contract stable.
 
-## Probe Assets
+## Probe Heads
 
-Convert PyTorch checkpoints into static frontend-readable tensors.
+Fold PyTorch probe checkpoints into the ONNX graph when the checkpoints are available. Do not ship fabricated result JSON.
 
 Required probes:
 
@@ -79,7 +79,7 @@ Required probes:
 - Post6 direct-legality probe: `Linear(512, 64)`.
 - Post7 preference probe: `Linear(512, 64)`.
 
-For every probe using standardized coordinates, export:
+For every standardized probe head, preserve:
 
 - `mean`
 - `std`
@@ -161,51 +161,18 @@ Suggested component structure:
 
 The board should be the visual center of the app. The ranking and diagnostics should sit beside it on desktop and below it on mobile.
 
-## JSON Contract
+## Runtime Data Contract
 
-Internally, the frontend can normalize inference output to this shape:
+Internally, the frontend normalizes ONNX output to this TypeScript shape:
 
-```json
-{
-  "input": "C4 C3 D3 E3 B2",
-  "toPlay": "mine",
-  "board": [
-    {
-      "square": "C4",
-      "simulatorState": "mine",
-      "l4ProbeState": "mine",
-      "l4Confidence": 0.98,
-      "l4Scores": {
-        "empty": -3.1,
-        "mine": 4.2,
-        "theirs": -1.8
-      }
-    }
-  ],
-  "legalMoves": [
-    {
-      "square": "F5",
-      "simulatorLegal": true,
-      "directPost6Score": 4.12,
-      "directPost6Legal": true,
-      "rayMaxScore": 0.97,
-      "rayMaxLegal": true,
-      "preferencePost7Score": 1.84,
-      "finalLogit": 2.03
-    }
-  ],
-  "probeChoice": "F5",
-  "finalLogitChoice": "C6",
-  "agreesWithFinalLogits": false
-}
-```
+See `src/types/probe.ts`. The current implementation computes board state from the simulator, post6 legality from ONNX probe heads, post7 ranking from the ONNX preference head, and final-logit comparison from the ONNX model logits.
 
 This can be produced entirely client-side after ONNX inference.
 
 ## Build Steps
 
 1. Create a Python export script in the source repo that loads Othello-GPT and emits an ONNX model with the required outputs.
-2. Create a probe conversion script that exports checkpoint tensors to JSON or compact binary assets.
+2. Fold available learned probe heads into that ONNX export.
 3. Build the Vite React app.
 4. Implement TypeScript Othello parsing and simulation.
 5. Implement ONNX inference and probe math.
@@ -214,7 +181,7 @@ This can be produced entirely client-side after ONNX inference.
 
 ## Verification Plan
 
-Use a small fixture set of move strings:
+Use a small reference set of move strings:
 
 - Opening prefix
 - Midgame prefix with several legal moves
@@ -223,12 +190,12 @@ Use a small fixture set of move strings:
 - Illegal input
 - Pass input, if a pass position is available
 
-For each valid fixture, compare browser output against Python reference output:
+For each valid reference prefix, compare browser output against Python reference output:
 
 - Token IDs
 - Simulator board
 - Simulator legal mask
-- L4 board probe argmax labels
+- L4 activation shape and, once available, board-probe argmax labels
 - Post6 direct-legality scores within tolerance
 - Post7 preference ranking within tolerance
 - Final-logit legal ranking within tolerance
@@ -243,21 +210,17 @@ Probe fidelity depends on using the exact same token convention, final-token act
 
 ## Milestones
 
-### Milestone 1: Static Data Prototype
-
-Build the React UI using precomputed JSON fixtures. No ONNX yet. This validates the visual design and data contract.
-
-### Milestone 2: Probe Asset Export
-
-Export probe checkpoints into frontend-readable tensors and unit-test TypeScript probe math against Python.
-
-### Milestone 3: Browser Model Runtime
+### Milestone 1: Browser Model Runtime
 
 Export Othello-GPT to ONNX, load it with `onnxruntime-web`, and return required activations/logits for arbitrary valid move strings.
 
-### Milestone 4: Integrated Toy
+### Milestone 2: Integrated Probe Heads
 
-Connect move input to browser inference and probe rendering. Add diagnostics and fixture parity checks.
+Fold available post6 and post7 learned probe heads into the ONNX graph and use them for legal markers and ranking.
+
+### Milestone 3: L4 Board Probe
+
+Recover or train the L4 board-state probe checkpoint and fold it into ONNX.
 
 ## Open Questions
 
