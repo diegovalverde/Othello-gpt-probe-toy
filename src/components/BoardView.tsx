@@ -47,6 +47,7 @@ export function BoardView({
                 className={[
                   "board-cell",
                   square.probeDiscState !== "empty" ? "has-disc" : "",
+                  showDiagnostics && !square.boardProbeMatchesSimulator ? "has-board-mismatch" : "",
                   isProbeChoice ? "is-probe-choice" : "",
                   isFinalChoice ? "is-final-choice" : "",
                   selectedSquare === square.square ? "is-selected" : "",
@@ -68,6 +69,9 @@ export function BoardView({
                   </span>
                 )}
                 {isProbeChoice && <span className="selected-label">probe</span>}
+                {showDiagnostics && !square.boardProbeMatchesSimulator && (
+                  <span className="mismatch-flag" title="L4 board probe differs from simulator" />
+                )}
               </button>
             );
           })}

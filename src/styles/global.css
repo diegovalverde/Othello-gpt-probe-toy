@@ -275,6 +275,19 @@ select {
   box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.45);
 }
 
+.board-cell.has-board-mismatch {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      rgba(255, 102, 85, 0.24) 0,
+      rgba(255, 102, 85, 0.24) 5px,
+      transparent 5px,
+      transparent 12px
+    ),
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.12), transparent 34%),
+    var(--board);
+}
+
 .disc {
   width: 62%;
   height: 62%;
@@ -340,6 +353,17 @@ select {
   background: var(--probe-preference);
   font-size: 10px;
   font-weight: 800;
+}
+
+.mismatch-flag {
+  position: absolute;
+  right: 9%;
+  top: 9%;
+  width: 11%;
+  height: 11%;
+  border-radius: 50%;
+  background: var(--probe-legality);
+  box-shadow: 0 0 0 3px rgba(255, 102, 85, 0.22);
 }
 
 .board-legend {

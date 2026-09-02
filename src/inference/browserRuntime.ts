@@ -147,12 +147,15 @@ export class BrowserOnnxRuntime implements ProbeRuntime {
           ? preferencePost7[squareIndex]
           : null;
 
+      const reconstructedDiscState = probeDiscState(probeState, game.toPlay);
+
       return {
         square,
         row: Math.floor(squareIndex / 8),
         col: squareIndex % 8,
         simulatorState,
-        probeDiscState: probeDiscState(probeState, game.toPlay),
+        probeDiscState: reconstructedDiscState,
+        boardProbeMatchesSimulator: reconstructedDiscState === simulatorState,
         probeState,
         probeConfidence: boardProbabilities[boardStateIndex],
         boardScores: { empty: emptyScore, mine: mineScore, theirs: theirsScore },
@@ -190,6 +193,9 @@ export class BrowserOnnxRuntime implements ProbeRuntime {
       }));
 
     const probeChoice = rankedMoves[0]?.square ?? null;
+    const boardProbeMismatchCount = board.filter(
+      (square) => !square.boardProbeMatchesSimulator,
+    ).length;
 
     return {
       input: normalizedInput,
@@ -198,6 +204,8 @@ export class BrowserOnnxRuntime implements ProbeRuntime {
       legalitySource,
       board,
       rankedMoves,
+      boardProbeAgreement: 1 - boardProbeMismatchCount / board.length,
+      boardProbeMismatchCount,
       probeChoice,
       finalLogitChoice,
       agreesWithFinalLogits:

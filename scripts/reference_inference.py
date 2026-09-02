@@ -178,6 +178,11 @@ def main() -> None:
         ]
     )
     board_probe_accuracy = float(np.mean(board_probe_labels == simulator_labels))
+    board_probe_mismatches = [
+        square_label(square)
+        for square in range(64)
+        if board_probe_labels[square] != simulator_labels[square]
+    ]
 
     rows = []
     for square in range(64):
@@ -216,6 +221,7 @@ def main() -> None:
     print(f"tokens: {token_ids}")
     print(f"to_play: {'black' if game.to_play == 1 else 'white'}")
     print(f"l4_board_probe_square_accuracy_for_prefix: {board_probe_accuracy:.6f}")
+    print(f"l4_board_probe_mismatches: {', '.join(board_probe_mismatches) or '-'}")
     print(f"probe_choice: {rows[0][0] if rows else None}")
     print(f"final_logit_choice: {final_choice}")
     print("rank square preference_post7 direct_post6 ray_max final_logit simulator_legal")

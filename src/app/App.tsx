@@ -123,6 +123,12 @@ export function App() {
             <span title={runtime.description}><Activity size={15} /> {runtime.label}</span>
             <span>{analysis.toPlay} to move</span>
             <span>{analysis.rankedMoves.length} probe-legal candidates</span>
+            <span
+              className={analysis.boardProbeMismatchCount === 0 ? "status-good" : "status-warn"}
+              title="L4 board-probe reconstruction compared with simulator replay"
+            >
+              L4 board {Math.round(analysis.boardProbeAgreement * 100)}%
+            </span>
             {showDiagnostics && (
               <span className={analysis.agreesWithFinalLogits ? "status-good" : "status-warn"}>
                 {analysis.agreesWithFinalLogits ? "agrees with logits" : "differs from logits"}

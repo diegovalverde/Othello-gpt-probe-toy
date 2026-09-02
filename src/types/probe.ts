@@ -21,6 +21,7 @@ export interface BoardSquareView {
   col: number;
   simulatorState: DiscState;
   probeDiscState: DiscState;
+  boardProbeMatchesSimulator: boolean;
   probeState: ProbeBoardState;
   probeConfidence: number;
   boardScores: SquareProbeScores;
@@ -51,6 +52,8 @@ export interface ProbeAnalysis {
   legalitySource: LegalitySource;
   board: BoardSquareView[];
   rankedMoves: RankedMove[];
+  boardProbeAgreement: number;
+  boardProbeMismatchCount: number;
   probeChoice: string | null;
   finalLogitChoice: string | null;
   agreesWithFinalLogits: boolean | null;

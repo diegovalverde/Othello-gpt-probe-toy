@@ -33,6 +33,12 @@ export function SquareInspector({ square, showDiagnostics }: SquareInspectorProp
           <dt>L4 board probe</dt>
           <dd>{square.probeState} ({Math.round(square.probeConfidence * 100)}%)</dd>
         </div>
+        {showDiagnostics && (
+          <div>
+            <dt>L4 vs simulator</dt>
+            <dd>{square.boardProbeMatchesSimulator ? "match" : "mismatch"}</dd>
+          </div>
+        )}
         <div>
           <dt>post6 legality</dt>
           <dd>{square.directPost6Score.toFixed(2)}</dd>
