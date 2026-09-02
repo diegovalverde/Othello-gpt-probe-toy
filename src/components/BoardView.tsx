@@ -46,7 +46,7 @@ export function BoardView({
               <button
                 className={[
                   "board-cell",
-                  square.simulatorState !== "empty" ? "has-disc" : "",
+                  square.probeDiscState !== "empty" ? "has-disc" : "",
                   isProbeChoice ? "is-probe-choice" : "",
                   isFinalChoice ? "is-final-choice" : "",
                   selectedSquare === square.square ? "is-selected" : "",
@@ -56,10 +56,10 @@ export function BoardView({
                 key={square.square}
                 onClick={() => onSelectSquare(square)}
                 type="button"
-                aria-label={`${square.square}: ${square.simulatorState}`}
+                aria-label={`${square.square}: ${square.probeDiscState}`}
               >
-                {square.simulatorState !== "empty" && (
-                  <span className={`disc disc-${square.simulatorState}`} />
+                {square.probeDiscState !== "empty" && (
+                  <span className={`disc disc-${square.probeDiscState}`} />
                 )}
                 {square.simulatorLegal && !rank && <span className="legal-dot simulator-dot" />}
                 {rank && (

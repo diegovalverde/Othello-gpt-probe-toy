@@ -2,14 +2,14 @@
 
 A static browser prototype for exploring Othello-GPT probe readouts.
 
-The app runs a real browser-side ONNX graph exported from Neel Nanda's Othello-GPT checkpoint. The graph returns final-token L4/post6/post7 activations, direct post6 legality scores, post6 capture-ray scores, post7 preference scores, and final logits. It does not use precomputed move-ranking result JSON.
+The app runs a real browser-side ONNX graph exported from Neel Nanda's Othello-GPT checkpoint. The graph returns final-token L4/post6/post7 activations, L4 board-state scores, direct post6 legality scores, post6 capture-ray scores, post7 preference scores, and final logits. It does not use precomputed move-ranking result JSON.
 
 ## Current Prototype
 
 The app shows:
 
 - an Othello move-string input
-- a large Othello board
+- a large Othello board rendered from the L4 board-state probe
 - probe-legal move markers from learned post6 probes
 - a post7 preference ranking from the learned preference probe
 - a square inspector
@@ -27,6 +27,13 @@ Generate the local model artifact from the real TransformerLens checkpoint and p
 ```
 
 This writes `public/model/othello-gpt-activations.onnx`. The file is intentionally gitignored because it is about 98 MiB and is fully reproducible from the script. The exporter verifies the ONNX output against PyTorch with ONNX Runtime before it exits.
+
+If the L4 board probe checkpoint is missing, generate it from the TransformerLens repo first:
+
+```bash
+cd /Users/diegovalverdegarro/workspace/projects/TransformerLens
+.venv/bin/python scripts/render_othello_probe_board.py --prefix "F5 D6 C3 D3 C4 F4 E3" --output /private/tmp/othello_l4_probe_check.svg
+```
 
 ## Run Locally
 
@@ -63,5 +70,4 @@ This command uses the same generated ONNX graph as the browser runtime and print
 
 ## Next Implementation Steps
 
-1. Export or recover the L4 board-state probe checkpoint and fold it into the ONNX graph.
-2. Add a browser smoke test that confirms ONNX Runtime produces rankings for selected move strings.
+1. Add a browser smoke test that confirms ONNX Runtime produces rankings for selected move strings.

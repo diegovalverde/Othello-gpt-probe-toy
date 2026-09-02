@@ -5,11 +5,12 @@ The exported graph has one input:
 
     tokens: int64[batch, pos]
 
-and seven outputs, all taken at the final sequence position:
+and eight outputs, all taken at the final sequence position:
 
     resid_post_l4: float32[batch, 512]
     resid_post_l6: float32[batch, 512]
     resid_post_l7: float32[batch, 512]
+    board_state_l4: float32[batch, 64, 3]
     direct_legality_post6: float32[batch, 64]
     capture_ray_post6: float32[batch, 64, 8]
     preference_post7: float32[batch, 64]
@@ -60,6 +61,9 @@ PREFERENCE_PROBE_PATH = (
     TRANSFORMER_LENS_ROOT
     / "demos/othello_jacobian_lens_outputs/l7_legal_move_preference_20260830_223054/l7_preference_probe_state.pt"
 )
+BOARD_STATE_PROBE_PATH = (
+    TRANSFORMER_LENS_ROOT / "demos/othello_board_probe_layer4_strict_split.pt"
+)
 
 
 class NormalizedLinearProbe(nn.Module):
@@ -84,12 +88,32 @@ class NormalizedLinearProbe(nn.Module):
         return self.linear(normalized)
 
 
+class RawLinearProbe(nn.Module):
+    def __init__(self, checkpoint_path: Path) -> None:
+        super().__init__()
+        if not checkpoint_path.exists():
+            raise FileNotFoundError(
+                f"Missing L4 board probe checkpoint: {checkpoint_path}. "
+                "Generate it with TransformerLens/scripts/render_othello_probe_board.py first."
+            )
+        checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+        state_dict = checkpoint["state_dict"]
+        linear = nn.Linear(state_dict["weight"].shape[1], state_dict["weight"].shape[0])
+        linear.load_state_dict(state_dict)
+        linear.eval()
+        self.linear = linear
+
+    def forward(self, activation: torch.Tensor) -> torch.Tensor:
+        return self.linear(activation)
+
+
 class OthelloGptOnnxWrapper(nn.Module):
     """Thin export wrapper that returns the activations used by the toy UI."""
 
     def __init__(self, model: HookedTransformer) -> None:
         super().__init__()
         self.model = model
+        self.board_state_l4 = RawLinearProbe(BOARD_STATE_PROBE_PATH)
         self.direct_legality_post6 = NormalizedLinearProbe(
             DIRECT_LEGALITY_PROBE_PATH, "blocks.6.hook_resid_post"
         )
@@ -128,6 +152,7 @@ class OthelloGptOnnxWrapper(nn.Module):
         resid_post_l6 = self._cache["blocks.6.hook_resid_post"][:, -1, :].contiguous()
         resid_post_l7 = self._cache["blocks.7.hook_resid_post"][:, -1, :].contiguous()
 
+        board_state_l4 = self.board_state_l4(resid_post_l4).reshape(-1, 64, 3).contiguous()
         direct_legality_post6 = self.direct_legality_post6(resid_post_l6).contiguous()
         capture_ray_post6 = self.capture_ray_post6(resid_post_l6).reshape(-1, 64, 8).contiguous()
         preference_post7 = self.preference_post7(resid_post_l7).contiguous()
@@ -136,6 +161,7 @@ class OthelloGptOnnxWrapper(nn.Module):
             resid_post_l4,
             resid_post_l6,
             resid_post_l7,
+            board_state_l4,
             direct_legality_post6,
             capture_ray_post6,
             preference_post7,
@@ -212,6 +238,7 @@ def export_onnx(wrapper: OthelloGptOnnxWrapper, output_path: Path, opset: int) -
             "resid_post_l4",
             "resid_post_l6",
             "resid_post_l7",
+            "board_state_l4",
             "direct_legality_post6",
             "capture_ray_post6",
             "preference_post7",
@@ -222,6 +249,7 @@ def export_onnx(wrapper: OthelloGptOnnxWrapper, output_path: Path, opset: int) -
             "resid_post_l4": {0: "batch"},
             "resid_post_l6": {0: "batch"},
             "resid_post_l7": {0: "batch"},
+            "board_state_l4": {0: "batch"},
             "direct_legality_post6": {0: "batch"},
             "capture_ray_post6": {0: "batch"},
             "preference_post7": {0: "batch"},
@@ -257,6 +285,7 @@ def verify_onnx(
         "resid_post_l4",
         "resid_post_l6",
         "resid_post_l7",
+        "board_state_l4",
         "direct_legality_post6",
         "capture_ray_post6",
         "preference_post7",

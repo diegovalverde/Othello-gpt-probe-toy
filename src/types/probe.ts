@@ -20,6 +20,7 @@ export interface BoardSquareView {
   row: number;
   col: number;
   simulatorState: DiscState;
+  probeDiscState: DiscState;
   probeState: ProbeBoardState;
   probeConfidence: number;
   boardScores: SquareProbeScores;

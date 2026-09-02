@@ -4,7 +4,7 @@ const stages = [
   { id: "l1", label: "L1", purpose: "", tone: "neutral" },
   { id: "l2", label: "L2", purpose: "", tone: "neutral" },
   { id: "l3", label: "L3", purpose: "", tone: "neutral" },
-  { id: "l4", label: "L4", purpose: "activation", tone: "board" },
+  { id: "l4", label: "L4", purpose: "board probe", tone: "board" },
   { id: "l5", label: "L5", purpose: "", tone: "neutral" },
   { id: "post6", label: "post6", purpose: "legality probe", tone: "legality" },
   { id: "post7", label: "post7", purpose: "preference probe", tone: "preference" },

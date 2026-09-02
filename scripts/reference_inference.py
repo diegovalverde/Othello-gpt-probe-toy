@@ -160,10 +160,24 @@ def main() -> None:
 
     session = ort.InferenceSession(str(args.model), providers=["CPUExecutionProvider"])
     outputs = session.run(None, {"tokens": np.array([token_ids], dtype=np.int64)})
-    direct_post6 = sigmoid(outputs[3][0])
-    capture_ray_post6 = sigmoid(outputs[4][0])
-    preference_post7 = outputs[5][0]
-    final_logits = outputs[6][0]
+    board_state_l4 = outputs[3][0]
+    direct_post6 = sigmoid(outputs[4][0])
+    capture_ray_post6 = sigmoid(outputs[5][0])
+    preference_post7 = outputs[6][0]
+    final_logits = outputs[7][0]
+
+    board_probe_labels = np.argmax(board_state_l4, axis=1)
+    simulator_labels = np.array(
+        [
+            0
+            if game.board[square] == 0
+            else 1
+            if game.board[square] == game.to_play
+            else 2
+            for square in range(64)
+        ]
+    )
+    board_probe_accuracy = float(np.mean(board_probe_labels == simulator_labels))
 
     rows = []
     for square in range(64):
@@ -201,6 +215,7 @@ def main() -> None:
 
     print(f"tokens: {token_ids}")
     print(f"to_play: {'black' if game.to_play == 1 else 'white'}")
+    print(f"l4_board_probe_square_accuracy_for_prefix: {board_probe_accuracy:.6f}")
     print(f"probe_choice: {rows[0][0] if rows else None}")
     print(f"final_logit_choice: {final_choice}")
     print("rank square preference_post7 direct_post6 ray_max final_logit simulator_legal")

@@ -6,9 +6,9 @@ interface StageDetailsProps {
 
 const details = {
   l4: {
-    eyebrow: "L4 activation",
-    title: "Board hook",
-    body: "The ONNX graph exposes the final-token layer-4 residual stream. The learned board-state head is still pending.",
+    eyebrow: "L4 board probe",
+    title: "Board readout",
+    body: "A learned linear probe reads empty, mine, and theirs states from the final-token layer-4 residual stream.",
     tone: "board",
     Icon: SquareStack,
   },

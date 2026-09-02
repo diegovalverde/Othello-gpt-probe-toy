@@ -60,6 +60,7 @@ Create a small PyTorch export wrapper around Othello-GPT that returns only the t
 - `blocks.4.hook_resid_post[:, -1, :]`
 - `blocks.6.hook_resid_post[:, -1, :]`
 - `blocks.7.hook_resid_post[:, -1, :]`
+- learned L4 board-state scores
 - learned post6 direct-legality scores
 - learned post6 capture-ray scores
 - learned post7 preference scores
@@ -165,7 +166,7 @@ The board should be the visual center of the app. The ranking and diagnostics sh
 
 Internally, the frontend normalizes ONNX output to this TypeScript shape:
 
-See `src/types/probe.ts`. The current implementation computes board state from the simulator, post6 legality from ONNX probe heads, post7 ranking from the ONNX preference head, and final-logit comparison from the ONNX model logits.
+See `src/types/probe.ts`. The current implementation computes board state from the ONNX L4 board-state head, post6 legality from ONNX probe heads, post7 ranking from the ONNX preference head, and final-logit comparison from the ONNX model logits.
 
 This can be produced entirely client-side after ONNX inference.
 
@@ -195,7 +196,7 @@ For each valid reference prefix, compare browser output against Python reference
 - Token IDs
 - Simulator board
 - Simulator legal mask
-- L4 activation shape and, once available, board-probe argmax labels
+- L4 board-probe argmax labels
 - Post6 direct-legality scores within tolerance
 - Post7 preference ranking within tolerance
 - Final-logit legal ranking within tolerance
@@ -218,9 +219,9 @@ Export Othello-GPT to ONNX, load it with `onnxruntime-web`, and return required 
 
 Fold available post6 and post7 learned probe heads into the ONNX graph and use them for legal markers and ranking.
 
-### Milestone 3: L4 Board Probe
+### Milestone 3: Browser Verification
 
-Recover or train the L4 board-state probe checkpoint and fold it into ONNX.
+Add automated browser smoke tests over the static build and generated ONNX asset.
 
 ## Open Questions
 

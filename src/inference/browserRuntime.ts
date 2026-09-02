@@ -42,6 +42,33 @@ function sigmoid(value: number): number {
   return 1 / (1 + Math.exp(-value));
 }
 
+function softmax3(a: number, b: number, c: number): [number, number, number] {
+  const max = Math.max(a, b, c);
+  const expA = Math.exp(a - max);
+  const expB = Math.exp(b - max);
+  const expC = Math.exp(c - max);
+  const total = expA + expB + expC;
+  return [expA / total, expB / total, expC / total];
+}
+
+function probeStateFromIndex(index: number): ProbeBoardState {
+  if (index === 0) {
+    return "empty";
+  }
+  if (index === 1) {
+    return "mine";
+  }
+  return "theirs";
+}
+
+function probeDiscState(probeState: ProbeBoardState, toPlay: "black" | "white"): "empty" | "black" | "white" {
+  if (probeState === "empty") {
+    return "empty";
+  }
+  const otherPlayer = toPlay === "black" ? "white" : "black";
+  return probeState === "mine" ? toPlay : otherPlayer;
+}
+
 function tensorData(output: ort.InferenceSession.OnnxValueMapType, name: string): Float32Array {
   const value = output[name];
   if (!(value instanceof ort.Tensor) || !(value.data instanceof Float32Array)) {
@@ -78,6 +105,7 @@ export class BrowserOnnxRuntime implements ProbeRuntime {
       [1, tokenIds.length],
     );
     const outputs = await session.run({ tokens: tokenTensor });
+    const boardStateL4 = tensorData(outputs, "board_state_l4");
     const directPost6 = tensorData(outputs, "direct_legality_post6");
     const captureRayPost6 = tensorData(outputs, "capture_ray_post6");
     const preferencePost7 = tensorData(outputs, "preference_post7");
@@ -90,6 +118,13 @@ export class BrowserOnnxRuntime implements ProbeRuntime {
     const board = Array.from({ length: 64 }, (_, squareIndex) => {
       const square = squareLabel(squareIndex);
       const simulatorState = game.stateAt(squareIndex);
+      const boardOffset = squareIndex * 3;
+      const emptyScore = boardStateL4[boardOffset];
+      const mineScore = boardStateL4[boardOffset + 1];
+      const theirsScore = boardStateL4[boardOffset + 2];
+      const boardProbabilities = softmax3(emptyScore, mineScore, theirsScore);
+      const boardStateIndex = boardProbabilities.indexOf(Math.max(...boardProbabilities));
+      const probeState = probeStateFromIndex(boardStateIndex);
       const directPost6Score = sigmoid(directPost6[squareIndex]);
       const directionalScores = DIRECTIONS.map((direction, directionIndex) => ({
         direction,
@@ -112,17 +147,15 @@ export class BrowserOnnxRuntime implements ProbeRuntime {
           ? preferencePost7[squareIndex]
           : null;
 
-      const probeState: ProbeBoardState =
-        simulatorState === "empty" ? "empty" : game.toPlay === simulatorState ? "mine" : "theirs";
-
       return {
         square,
         row: Math.floor(squareIndex / 8),
         col: squareIndex % 8,
         simulatorState,
+        probeDiscState: probeDiscState(probeState, game.toPlay),
         probeState,
-        probeConfidence: 1,
-        boardScores: { empty: 0, mine: 0, theirs: 0 },
+        probeConfidence: boardProbabilities[boardStateIndex],
+        boardScores: { empty: emptyScore, mine: mineScore, theirs: theirsScore },
         simulatorLegal,
         directPost6Score,
         directPost6Legal,
