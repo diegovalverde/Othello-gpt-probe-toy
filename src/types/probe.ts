@@ -9,6 +9,12 @@ export interface SquareProbeScores {
   theirs: number;
 }
 
+export interface DirectionalProbeScore {
+  direction: "NW" | "N" | "NE" | "W" | "E" | "SW" | "S" | "SE";
+  score: number;
+  active: boolean;
+}
+
 export interface BoardSquareView {
   square: string;
   row: number;
@@ -22,6 +28,7 @@ export interface BoardSquareView {
   directPost6Legal: boolean;
   rayMaxScore: number;
   rayMaxLegal: boolean;
+  directionalScores: DirectionalProbeScore[];
   preferencePost7Score: number | null;
   finalLogit: number | null;
 }

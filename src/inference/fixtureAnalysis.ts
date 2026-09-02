@@ -1,5 +1,6 @@
 import type {
   BoardSquareView,
+  DirectionalProbeScore,
   LegalitySource,
   ProbeAnalysis,
   ProbeBoardState,
@@ -54,6 +55,8 @@ const finalLogitFixture = new Map<string, number>([
   ["G3", 0.28],
 ]);
 
+const DIRECTIONS: DirectionalProbeScore["direction"][] = ["NW", "N", "NE", "W", "E", "SW", "S", "SE"];
+
 function seededScore(square: string, salt: number): number {
   let hash = salt;
   for (const char of square) {
@@ -101,6 +104,21 @@ function scoreFor(
   return Number(base.toFixed(2));
 }
 
+function directionalScoresFor(square: string, legal: boolean, rayMaxScore: number): DirectionalProbeScore[] {
+  const activeIndex = Math.floor(seededScore(square, 71) * DIRECTIONS.length) % DIRECTIONS.length;
+  return DIRECTIONS.map((direction, index) => {
+    const active = legal && index === activeIndex;
+    const base = active
+      ? rayMaxScore
+      : Math.max(0.03, Math.min(0.62, seededScore(`${square}${direction}`, 83) * 0.72));
+    return {
+      direction,
+      score: Number(base.toFixed(2)),
+      active,
+    };
+  });
+}
+
 export function analyzeWithFixtures(
   input: string,
   legalitySource: LegalitySource,
@@ -137,6 +155,7 @@ export function analyzeWithFixtures(
       directPost6Legal,
       rayMaxScore,
       rayMaxLegal,
+      directionalScores: directionalScoresFor(label, isSimulatorLegal, rayMaxScore),
       preferencePost7Score: isCandidate ? scoreFor(label, true, preferenceFixture, 43) : null,
       finalLogit: isSimulatorLegal ? scoreFor(label, true, finalLogitFixture, 53) : null,
     };

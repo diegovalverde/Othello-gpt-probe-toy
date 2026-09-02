@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Activity, Play, SlidersHorizontal } from "lucide-react";
 import { BoardView } from "../components/BoardView";
+import { DirectionalProbePanel } from "../components/DirectionalProbePanel";
 import { MoveRanking } from "../components/MoveRanking";
 import { ProbeRail } from "../components/ProbeRail";
 import { SquareInspector } from "../components/SquareInspector";
@@ -13,6 +14,7 @@ export function App() {
   const [legalitySource, setLegalitySource] = useState<LegalitySource>("direct_post6");
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [selectedSquare, setSelectedSquare] = useState<BoardSquareView | null>(null);
+  const [activeStage, setActiveStage] = useState("post7");
   const [error, setError] = useState<string | null>(null);
 
   const analysis = useMemo(() => {
@@ -30,6 +32,9 @@ export function App() {
     selectedSquare && analysis?.board.find((square) => square.square === selectedSquare.square)
       ? analysis.board.find((square) => square.square === selectedSquare.square) ?? null
       : null;
+  const probeChoiceSquare =
+    analysis?.board.find((square) => square.square === analysis.probeChoice) ?? null;
+  const directionalSquare = selected ?? probeChoiceSquare;
 
   function submitMoves() {
     setSubmittedMoveString(moveString);
@@ -124,10 +129,11 @@ export function App() {
                 showDiagnostics={showDiagnostics}
               />
               <SquareInspector square={selected} showDiagnostics={showDiagnostics} />
+              {activeStage === "post6" && <DirectionalProbePanel square={directionalSquare} />}
             </div>
           </div>
 
-          <ProbeRail />
+          <ProbeRail activeStage={activeStage} onStageSelect={setActiveStage} />
         </>
       )}
     </main>

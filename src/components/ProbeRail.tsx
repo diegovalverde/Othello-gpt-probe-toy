@@ -11,7 +11,12 @@ const stages = [
   { id: "logits", label: "logits", purpose: "diagnostic", tone: "logits" },
 ];
 
-export function ProbeRail() {
+interface ProbeRailProps {
+  activeStage: string;
+  onStageSelect: (stageId: string) => void;
+}
+
+export function ProbeRail({ activeStage, onStageSelect }: ProbeRailProps) {
   return (
     <section className="probe-rail" aria-label="Transformer probe rail">
       <div className="wire-field" aria-hidden="true">
@@ -22,9 +27,13 @@ export function ProbeRail() {
       <div className="rail-track">
         {stages.map((stage, index) => (
           <div className="rail-stage-wrap" key={stage.id}>
-            <div className={`rail-stage tone-${stage.tone}`}>
+            <button
+              className={`rail-stage tone-${stage.tone} ${activeStage === stage.id ? "active" : ""}`}
+              onClick={() => onStageSelect(stage.id)}
+              type="button"
+            >
               <span>{stage.label}</span>
-            </div>
+            </button>
             {stage.purpose && <p>{stage.purpose}</p>}
             {index < stages.length - 1 && <span className="rail-connector" />}
           </div>
