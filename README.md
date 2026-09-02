@@ -45,6 +45,16 @@ npm run build
 
 The production build is written to `dist/`. The eventual target is a static webpage that runs browser-side inference with ONNX and static probe assets, with no hosted backend.
 
+## Reference Inference
+
+To inspect real ONNX-derived scores from the command line:
+
+```bash
+/Users/diegovalverdegarro/workspace/projects/TransformerLens/.venv/bin/python scripts/reference_inference.py "F5 D6 C3 D3 C4 F4 E3"
+```
+
+This command uses the same generated ONNX graph as the browser runtime and prints ranked candidate moves. It is intended for debugging and parity checks.
+
 ## Important Docs
 
 - [Application design](docs/design.md)
@@ -54,5 +64,4 @@ The production build is written to `dist/`. The eventual target is a static webp
 ## Next Implementation Steps
 
 1. Export or recover the L4 board-state probe checkpoint and fold it into the ONNX graph.
-2. Add a small Python reference command that emits parity rows for selected move strings.
-3. Add a browser smoke test that confirms ONNX Runtime produces rankings for those move strings.
+2. Add a browser smoke test that confirms ONNX Runtime produces rankings for selected move strings.

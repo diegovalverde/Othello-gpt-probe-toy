@@ -7,7 +7,7 @@ const targetDir = "public/ort";
 mkdirSync(targetDir, { recursive: true });
 
 for (const fileName of readdirSync(sourceDir)) {
-  if (fileName.startsWith("ort-wasm-simd-threaded.") && (fileName.endsWith(".wasm") || fileName.endsWith(".mjs"))) {
+  if (fileName === "ort-wasm-simd-threaded.wasm") {
     copyFileSync(join(sourceDir, fileName), join(targetDir, fileName));
   }
 }

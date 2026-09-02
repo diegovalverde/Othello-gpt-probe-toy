@@ -7,7 +7,7 @@ import {
   replayTokens,
   squareLabel,
 } from "../othello/othello";
-import * as ort from "onnxruntime-web";
+import * as ort from "onnxruntime-web/wasm";
 
 const MODEL_URL = "/model/othello-gpt-activations.onnx";
 const DEFAULT_INPUT = "F5 D6 C3 D3 C4 F4 E3";
@@ -30,9 +30,11 @@ ort.env.wasm.numThreads = 1;
 ort.env.wasm.proxy = false;
 
 function getSession(): Promise<ort.InferenceSession> {
-  sessionPromise ??= ort.InferenceSession.create(MODEL_URL, {
-    executionProviders: ["wasm"],
-  });
+  if (sessionPromise == null) {
+    sessionPromise = ort.InferenceSession.create(MODEL_URL, {
+      executionProviders: ["wasm"],
+    });
+  }
   return sessionPromise;
 }
 
