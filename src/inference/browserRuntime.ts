@@ -25,9 +25,11 @@ const DIRECTIONS: DirectionalProbeScore["direction"][] = [
 ];
 
 let sessionPromise: Promise<ort.InferenceSession> | null = null;
-ort.env.wasm.wasmPaths = "/ort/";
 ort.env.wasm.numThreads = 1;
 ort.env.wasm.proxy = false;
+ort.env.wasm.wasmPaths = {
+  wasm: "/ort/ort-wasm-simd-threaded.wasm",
+};
 
 function getSession(): Promise<ort.InferenceSession> {
   if (sessionPromise == null) {

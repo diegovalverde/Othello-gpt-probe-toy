@@ -10,8 +10,12 @@ interface MoveRankingProps {
   onSelectMove: (square: string) => void;
 }
 
-function pct(value: number): string {
-  return `${Math.round(value * 100)}%`;
+function relativeWidth(value: number, min: number, max: number): string {
+  if (max === min) {
+    return "100%";
+  }
+  const normalized = (value - min) / (max - min);
+  return `${Math.max(8, Math.round(normalized * 100))}%`;
 }
 
 export function MoveRanking({
@@ -22,6 +26,10 @@ export function MoveRanking({
   showDiagnostics,
   onSelectMove,
 }: MoveRankingProps) {
+  const preferenceScores = moves.map((move) => move.preferencePost7Score);
+  const minPreference = Math.min(...preferenceScores);
+  const maxPreference = Math.max(...preferenceScores);
+
   return (
     <section className="ranking-card">
       <div className="panel-heading">
@@ -59,9 +67,17 @@ export function MoveRanking({
             <span className="rank-number">{move.rank}</span>
             <span className="move-label">{move.square}</span>
             <div className="score-bar" aria-label={`Preference score ${move.preferencePost7Score}`}>
-              <span style={{ width: pct(move.preferencePost7Score) }} />
+              <span
+                style={{
+                  width: relativeWidth(
+                    move.preferencePost7Score,
+                    minPreference,
+                    maxPreference,
+                  ),
+                }}
+              />
             </div>
-            <span className="score-text">{pct(move.preferencePost7Score)}</span>
+            <span className="score-text">{move.preferencePost7Score.toFixed(2)}</span>
             {showDiagnostics && (
               <span className={move.agreesWithFinalChoice ? "diag-match" : "diag-muted"}>
                 logits {move.finalLogit.toFixed(2)}
