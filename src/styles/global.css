@@ -535,6 +535,19 @@ h2 {
   align-items: center;
   min-height: 38px;
   border-top: 1px solid rgba(216, 222, 216, 0.7);
+  border-right: 0;
+  border-bottom: 0;
+  border-left: 0;
+  width: 100%;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+}
+
+.ranking-row:hover {
+  background: rgba(19, 169, 154, 0.06);
 }
 
 .rank-number {

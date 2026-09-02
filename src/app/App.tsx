@@ -6,7 +6,8 @@ import { MoveRanking } from "../components/MoveRanking";
 import { ProbeRail } from "../components/ProbeRail";
 import { StageDetails } from "../components/StageDetails";
 import { SquareInspector } from "../components/SquareInspector";
-import { analyzeWithFixtures, DEFAULT_INPUT } from "../inference/fixtureAnalysis";
+import { DEFAULT_INPUT, fixtureRuntime } from "../inference/fixtureRuntime";
+import { runAnalysis } from "../inference/runtime";
 import type { BoardSquareView, LegalitySource } from "../types/probe";
 
 export function App() {
@@ -16,18 +17,12 @@ export function App() {
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [selectedSquare, setSelectedSquare] = useState<BoardSquareView | null>(null);
   const [activeStage, setActiveStage] = useState("post7");
-  const [error, setError] = useState<string | null>(null);
 
-  const analysis = useMemo(() => {
-    try {
-      const result = analyzeWithFixtures(submittedMoveString, legalitySource);
-      setError(null);
-      return result;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to parse this move string.");
-      return null;
-    }
-  }, [submittedMoveString, legalitySource]);
+  const runtime = fixtureRuntime;
+  const { analysis, error } = useMemo(
+    () => runAnalysis(runtime, submittedMoveString, legalitySource),
+    [runtime, submittedMoveString, legalitySource],
+  );
 
   const selected =
     selectedSquare && analysis?.board.find((square) => square.square === selectedSquare.square)
@@ -40,6 +35,13 @@ export function App() {
   function submitMoves() {
     setSubmittedMoveString(moveString);
     setSelectedSquare(null);
+  }
+
+  function selectSquareByLabel(squareLabel: string) {
+    const square = analysis?.board.find((item) => item.square === squareLabel);
+    if (square) {
+      setSelectedSquare(square);
+    }
   }
 
   return (
@@ -101,7 +103,7 @@ export function App() {
       {analysis && (
         <>
           <section className="status-strip">
-            <span><Activity size={15} /> Fixture runtime</span>
+            <span title={runtime.description}><Activity size={15} /> {runtime.label}</span>
             <span>{analysis.toPlay} to move</span>
             <span>{analysis.rankedMoves.length} probe-legal candidates</span>
             {showDiagnostics && (
@@ -129,6 +131,7 @@ export function App() {
                 finalLogitChoice={analysis.finalLogitChoice}
                 agrees={analysis.agreesWithFinalLogits}
                 showDiagnostics={showDiagnostics}
+                onSelectMove={selectSquareByLabel}
               />
               <SquareInspector square={selected} showDiagnostics={showDiagnostics} />
               {activeStage === "post6" && <DirectionalProbePanel square={directionalSquare} />}

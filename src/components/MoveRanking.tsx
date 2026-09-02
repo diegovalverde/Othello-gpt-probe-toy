@@ -7,6 +7,7 @@ interface MoveRankingProps {
   finalLogitChoice: string | null;
   agrees: boolean | null;
   showDiagnostics: boolean;
+  onSelectMove: (square: string) => void;
 }
 
 function pct(value: number): string {
@@ -19,6 +20,7 @@ export function MoveRanking({
   finalLogitChoice,
   agrees,
   showDiagnostics,
+  onSelectMove,
 }: MoveRankingProps) {
   return (
     <section className="ranking-card">
@@ -48,7 +50,12 @@ export function MoveRanking({
       </div>
       <div className="ranking-list">
         {moves.map((move) => (
-          <div className="ranking-row" key={move.square}>
+          <button
+            className="ranking-row"
+            key={move.square}
+            onClick={() => onSelectMove(move.square)}
+            type="button"
+          >
             <span className="rank-number">{move.rank}</span>
             <span className="move-label">{move.square}</span>
             <div className="score-bar" aria-label={`Preference score ${move.preferencePost7Score}`}>
@@ -60,7 +67,7 @@ export function MoveRanking({
                 logits {move.finalLogit.toFixed(2)}
               </span>
             )}
-          </div>
+          </button>
         ))}
       </div>
     </section>
