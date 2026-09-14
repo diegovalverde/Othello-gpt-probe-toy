@@ -288,6 +288,20 @@ select {
     var(--board);
 }
 
+.board-cell.is-directional-line::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  background: rgba(37, 99, 235, 0.24);
+  pointer-events: none;
+}
+
+.board-cell > :not(.directional-overlay) {
+  position: relative;
+  z-index: 1;
+}
+
 .disc {
   width: 62%;
   height: 62%;
@@ -392,7 +406,7 @@ select {
 
 .directional-score {
   gap: 1px;
-  color: rgb(198 66 52 / calc(0.28 + var(--directional-score, 0) * 0.68));
+  color: rgb(37 99 235 / calc(0.28 + var(--directional-score, 0) * 0.68));
   text-shadow: 0 1px 1px rgb(255 255 255 / 0.45);
 }
 
@@ -413,7 +427,7 @@ select {
 }
 
 .directional-score.active {
-  color: #762419;
+  color: #1d4ed8;
 }
 
 .directional-target {
@@ -460,7 +474,7 @@ select {
 }
 
 .board-legend .directional-legend {
-  color: #c64234;
+  color: #2563eb;
   font-size: 12px;
 }
 

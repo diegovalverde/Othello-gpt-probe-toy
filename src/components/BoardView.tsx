@@ -49,6 +49,28 @@ export function BoardView({
   const directionalScores = new Map(
     directionalSquare?.directionalScores.map((score) => [score.direction, score]),
   );
+  const highlightedDirections = new Set(
+    directionalSquare?.directionalScores
+      .filter((score) => score.score > 0.5)
+      .map((score) => score.direction),
+  );
+
+  function isOnHighlightedDirectionalLine(square: BoardSquareView): boolean {
+    if (!directionalSquare) {
+      return false;
+    }
+    const sameColumn = square.col === directionalSquare.col;
+    const sameRow = square.row === directionalSquare.row;
+    const mainDiagonal = square.row - square.col === directionalSquare.row - directionalSquare.col;
+    const antiDiagonal = square.row + square.col === directionalSquare.row + directionalSquare.col;
+
+    return (
+      (sameColumn && (highlightedDirections.has("N") || highlightedDirections.has("S"))) ||
+      (sameRow && (highlightedDirections.has("E") || highlightedDirections.has("W"))) ||
+      (mainDiagonal && (highlightedDirections.has("NW") || highlightedDirections.has("SE"))) ||
+      (antiDiagonal && (highlightedDirections.has("NE") || highlightedDirections.has("SW")))
+    );
+  }
 
   return (
     <section className="board-panel" aria-label="Othello board">
@@ -73,6 +95,7 @@ export function BoardView({
             const isProbeChoice = showPreference && square.square === probeChoice;
             const isFinalChoice = showDiagnostics && square.square === finalLogitChoice;
             const isDirectionalTarget = square.square === directionalSquare?.square;
+            const isOnDirectionalLine = isOnHighlightedDirectionalLine(square);
             return (
               <button
                 className={[
@@ -83,6 +106,7 @@ export function BoardView({
                   isFinalChoice ? "is-final-choice" : "",
                   selectedSquare === square.square ? "is-selected" : "",
                   isDirectionalTarget ? "is-directional-target" : "",
+                  isOnDirectionalLine ? "is-directional-line" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
@@ -150,7 +174,7 @@ export function BoardView({
         <span><i className="legend-dot" />Legal</span>
         {showPreference && <span><i className="legend-ring" />Probe choice</span>}
         {showLogitRanks && <span className="logit-legend">Logit rank: gray matches post7, coral differs</span>}
-        {directionalSquare && <span className="directional-legend">Coral tiles show post6 capture-ray scores</span>}
+        {directionalSquare && <span className="directional-legend">Blue arrows and lines show post6 capture-ray scores above 0.5</span>}
       </div>
     </section>
   );
