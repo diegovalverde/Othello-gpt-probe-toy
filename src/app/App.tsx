@@ -144,16 +144,19 @@ export function App() {
               onSelectSquare={setSelectedSquare}
               selectedSquare={selected?.square ?? null}
               directionalSquare={activeStage === "post6" ? directionalSquare : null}
+              showPreference={activeStage === "post7"}
             />
             <div className="side-stack">
-              <MoveRanking
-                moves={analysis.rankedMoves}
-                probeChoice={analysis.probeChoice}
-                finalLogitChoice={analysis.finalLogitChoice}
-                agrees={analysis.agreesWithFinalLogits}
-                showDiagnostics={showDiagnostics}
-                onSelectMove={selectSquareByLabel}
-              />
+              {activeStage === "post7" && (
+                <MoveRanking
+                  moves={analysis.rankedMoves}
+                  probeChoice={analysis.probeChoice}
+                  finalLogitChoice={analysis.finalLogitChoice}
+                  agrees={analysis.agreesWithFinalLogits}
+                  showDiagnostics={showDiagnostics}
+                  onSelectMove={selectSquareByLabel}
+                />
+              )}
               <SquareInspector square={selected} showDiagnostics={showDiagnostics} />
             </div>
           </div>
