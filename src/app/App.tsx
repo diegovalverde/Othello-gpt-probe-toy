@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Activity, Play, SlidersHorizontal } from "lucide-react";
 import { BoardView } from "../components/BoardView";
-import { MoveRanking } from "../components/MoveRanking";
 import { ProbeRail } from "../components/ProbeRail";
 import { SquareInspector } from "../components/SquareInspector";
 import { BrowserOnnxRuntime, DEFAULT_INPUT } from "../inference/browserRuntime";
@@ -48,13 +47,6 @@ export function App() {
   function submitMoves() {
     setSubmittedMoveString(moveString);
     setSelectedSquare(null);
-  }
-
-  function selectSquareByLabel(squareLabel: string) {
-    const square = analysis?.board.find((item) => item.square === squareLabel);
-    if (square) {
-      setSelectedSquare(square);
-    }
   }
 
   return (
@@ -147,18 +139,9 @@ export function App() {
               selectedSquare={selected?.square ?? null}
               directionalSquare={activeStage === "post6" ? directionalSquare : null}
               showPreference={activeStage === "post7"}
+              showLogitRanks={activeStage === "post7" && showDiagnostics}
             />
             <div className="side-stack">
-              {activeStage === "post7" && (
-                <MoveRanking
-                  moves={analysis.rankedMoves}
-                  probeChoice={analysis.probeChoice}
-                  finalLogitChoice={analysis.finalLogitChoice}
-                  agrees={analysis.agreesWithFinalLogits}
-                  showDiagnostics={showDiagnostics}
-                  onSelectMove={selectSquareByLabel}
-                />
-              )}
               <SquareInspector square={selected} showDiagnostics={showDiagnostics} />
             </div>
           </div>

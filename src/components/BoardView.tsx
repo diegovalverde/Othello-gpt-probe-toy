@@ -11,6 +11,7 @@ interface BoardViewProps {
   selectedSquare: string | null;
   directionalSquare: BoardSquareView | null;
   showPreference: boolean;
+  showLogitRanks: boolean;
 }
 
 const FILES = ["A", "B", "C", "D", "E", "F", "G", "H"];
@@ -36,8 +37,15 @@ export function BoardView({
   selectedSquare,
   directionalSquare,
   showPreference,
+  showLogitRanks,
 }: BoardViewProps) {
   const rankBySquare = new Map(rankedMoves.map((move) => [move.square, move.rank]));
+  const moveBySquare = new Map(rankedMoves.map((move) => [move.square, move]));
+  const logitRankBySquare = new Map(
+    [...rankedMoves]
+      .sort((left, right) => right.finalLogit - left.finalLogit)
+      .map((move, index) => [move.square, index + 1]),
+  );
   const directionalScores = new Map(
     directionalSquare?.directionalScores.map((score) => [score.direction, score]),
   );
@@ -59,6 +67,9 @@ export function BoardView({
         <div className="board-grid">
           {board.map((square) => {
             const rank = showPreference ? rankBySquare.get(square.square) : undefined;
+            const move = moveBySquare.get(square.square);
+            const logitRank = showLogitRanks ? logitRankBySquare.get(square.square) : undefined;
+            const logitMatchesProbeRank = logitRank === rank;
             const isProbeChoice = showPreference && square.square === probeChoice;
             const isFinalChoice = showDiagnostics && square.square === finalLogitChoice;
             const isDirectionalTarget = square.square === directionalSquare?.square;
@@ -79,6 +90,11 @@ export function BoardView({
                 onClick={() => onSelectSquare(square)}
                 type="button"
                 aria-label={`${square.square}: ${square.probeDiscState}`}
+                title={
+                  showLogitRanks && rank != null && logitRank != null && move
+                    ? `post7 preference score: ${move.preferencePost7Score.toFixed(3)}\nfinal logit: ${move.finalLogit.toFixed(3)}`
+                    : undefined
+                }
               >
                 {square.probeDiscState !== "empty" && (
                   <span className={`disc disc-${square.probeDiscState}`} />
@@ -87,6 +103,11 @@ export function BoardView({
                 {rank && (
                   <span className="preference-marker">
                     <span className="preference-rank">{rank}</span>
+                  </span>
+                )}
+                {logitRank != null && (
+                  <span className={`logit-rank ${logitMatchesProbeRank ? "matches-probe" : "differs-from-probe"}`}>
+                    {logitRank}
                   </span>
                 )}
                 {isProbeChoice && <span className="selected-label">probe</span>}
@@ -128,6 +149,7 @@ export function BoardView({
         <span><i className="legend-disc white" />White</span>
         <span><i className="legend-dot" />Legal</span>
         {showPreference && <span><i className="legend-ring" />Probe choice</span>}
+        {showLogitRanks && <span className="logit-legend">Logit rank: gray matches post7, coral differs</span>}
         {directionalSquare && <span className="directional-legend">Coral tiles show post6 capture-ray scores</span>}
       </div>
     </section>
