@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Activity, Play, SlidersHorizontal } from "lucide-react";
 import { BoardView } from "../components/BoardView";
-import { DirectionalProbePanel } from "../components/DirectionalProbePanel";
 import { MoveRanking } from "../components/MoveRanking";
 import { ProbeRail } from "../components/ProbeRail";
 import { SquareInspector } from "../components/SquareInspector";
@@ -144,6 +143,7 @@ export function App() {
               showDiagnostics={showDiagnostics}
               onSelectSquare={setSelectedSquare}
               selectedSquare={selected?.square ?? null}
+              directionalSquare={activeStage === "post6" ? directionalSquare : null}
             />
             <div className="side-stack">
               <MoveRanking
@@ -155,7 +155,6 @@ export function App() {
                 onSelectMove={selectSquareByLabel}
               />
               <SquareInspector square={selected} showDiagnostics={showDiagnostics} />
-              {activeStage === "post6" && <DirectionalProbePanel square={directionalSquare} />}
             </div>
           </div>
 

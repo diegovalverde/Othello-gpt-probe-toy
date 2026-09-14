@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { BoardSquareView, RankedMove } from "../types/probe";
 
 interface BoardViewProps {
@@ -8,9 +9,21 @@ interface BoardViewProps {
   showDiagnostics: boolean;
   onSelectSquare: (square: BoardSquareView) => void;
   selectedSquare: string | null;
+  directionalSquare: BoardSquareView | null;
 }
 
 const FILES = ["A", "B", "C", "D", "E", "F", "G", "H"];
+const DIRECTION_CELLS = [
+  { direction: "NW", angle: -135 },
+  { direction: "N", angle: -90 },
+  { direction: "NE", angle: -45 },
+  { direction: "W", angle: 180 },
+  { direction: "target", angle: 0 },
+  { direction: "E", angle: 0 },
+  { direction: "SW", angle: 135 },
+  { direction: "S", angle: 90 },
+  { direction: "SE", angle: 45 },
+] as const;
 
 export function BoardView({
   board,
@@ -20,8 +33,12 @@ export function BoardView({
   showDiagnostics,
   onSelectSquare,
   selectedSquare,
+  directionalSquare,
 }: BoardViewProps) {
   const rankBySquare = new Map(rankedMoves.map((move) => [move.square, move.rank]));
+  const directionalScores = new Map(
+    directionalSquare?.directionalScores.map((score) => [score.direction, score]),
+  );
 
   return (
     <section className="board-panel" aria-label="Othello board">
@@ -42,6 +59,7 @@ export function BoardView({
             const rank = rankBySquare.get(square.square);
             const isProbeChoice = square.square === probeChoice;
             const isFinalChoice = showDiagnostics && square.square === finalLogitChoice;
+            const isDirectionalTarget = square.square === directionalSquare?.square;
             return (
               <button
                 className={[
@@ -51,6 +69,7 @@ export function BoardView({
                   isProbeChoice ? "is-probe-choice" : "",
                   isFinalChoice ? "is-final-choice" : "",
                   selectedSquare === square.square ? "is-selected" : "",
+                  isDirectionalTarget ? "is-directional-target" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
@@ -72,6 +91,31 @@ export function BoardView({
                 {showDiagnostics && !square.boardProbeMatchesSimulator && (
                   <span className="mismatch-flag" title="L4 board probe differs from simulator" />
                 )}
+                {isDirectionalTarget && (
+                  <span className="directional-overlay" aria-label="Directional capture-ray scores">
+                    {DIRECTION_CELLS.map(({ direction, angle }) => {
+                      if (direction === "target") {
+                        return <span className="directional-target" key={direction} />;
+                      }
+                      const score = directionalScores.get(
+                        direction as BoardSquareView["directionalScores"][number]["direction"],
+                      );
+                      return (
+                        <span
+                          className={`directional-score ${score?.active ? "active" : ""}`}
+                          key={direction}
+                          style={{
+                            "--directional-score": score?.score ?? 0,
+                            "--directional-angle": `${angle}deg`,
+                          } as CSSProperties}
+                        >
+                          <i aria-hidden="true">➜</i>
+                          <em>{score?.score.toFixed(2) ?? "-"}</em>
+                        </span>
+                      );
+                    })}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -82,6 +126,7 @@ export function BoardView({
         <span><i className="legend-disc white" />White</span>
         <span><i className="legend-dot" />Legal</span>
         <span><i className="legend-ring" />Probe choice</span>
+        {directionalSquare && <span className="directional-legend">Coral tiles show post6 capture-ray scores</span>}
       </div>
     </section>
   );
