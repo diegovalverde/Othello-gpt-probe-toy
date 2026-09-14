@@ -7,13 +7,7 @@ interface SquareInspectorProps {
 
 export function SquareInspector({ square, showDiagnostics }: SquareInspectorProps) {
   if (!square) {
-    return (
-      <section className="inspector-card">
-        <p className="eyebrow">square inspector</p>
-        <h2>Select a square</h2>
-        <p className="muted">Click a board square to inspect probe scores and simulator state.</p>
-      </section>
-    );
+    return null;
   }
 
   return (

@@ -417,7 +417,6 @@ select {
 .ranking-card,
 .inspector-card,
 .direction-card,
-.stage-details,
 .probe-rail {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -429,63 +428,6 @@ select {
 .inspector-card,
 .direction-card {
   padding: 20px;
-}
-
-.stage-details {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 14px;
-  align-items: start;
-  padding: 16px;
-  box-shadow: var(--shadow);
-}
-
-.stage-details svg {
-  margin-top: 2px;
-}
-
-.stage-details h2 {
-  font-size: 18px;
-}
-
-.stage-details p:last-child {
-  margin: 7px 0 0;
-  color: var(--muted);
-  line-height: 1.45;
-}
-
-.stage-details.tone-board {
-  border-color: rgba(230, 165, 0, 0.36);
-}
-
-.stage-details.tone-board svg,
-.stage-details.tone-board .eyebrow {
-  color: #9a6d00;
-}
-
-.stage-details.tone-legality {
-  border-color: rgba(255, 102, 85, 0.36);
-}
-
-.stage-details.tone-legality svg {
-  color: var(--probe-legality);
-}
-
-.stage-details.tone-preference {
-  border-color: rgba(19, 169, 154, 0.36);
-}
-
-.stage-details.tone-preference svg {
-  color: var(--probe-preference);
-}
-
-.stage-details.tone-logits {
-  border-color: rgba(138, 149, 163, 0.4);
-}
-
-.stage-details.tone-logits svg,
-.stage-details.tone-logits .eyebrow {
-  color: var(--probe-logits);
 }
 
 .panel-heading {
@@ -761,7 +703,7 @@ h2 {
   min-height: 182px;
   margin-top: 24px;
   padding: 42px 24px 24px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .wire-field {
@@ -856,6 +798,35 @@ h2 {
   color: var(--muted);
   font-size: 12px;
   font-weight: 750;
+}
+
+.rail-tooltip {
+  position: absolute;
+  z-index: 2;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  width: max-content;
+  max-width: min(280px, 80vw);
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+  text-align: left;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.rail-stage-wrap:has(.rail-stage:hover) .rail-tooltip,
+.rail-stage-wrap:has(.rail-stage:focus-visible) .rail-tooltip {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .tone-board {

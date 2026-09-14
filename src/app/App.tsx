@@ -4,7 +4,6 @@ import { BoardView } from "../components/BoardView";
 import { DirectionalProbePanel } from "../components/DirectionalProbePanel";
 import { MoveRanking } from "../components/MoveRanking";
 import { ProbeRail } from "../components/ProbeRail";
-import { StageDetails } from "../components/StageDetails";
 import { SquareInspector } from "../components/SquareInspector";
 import { BrowserOnnxRuntime, DEFAULT_INPUT } from "../inference/browserRuntime";
 import { runAnalysis } from "../inference/runtime";
@@ -147,7 +146,6 @@ export function App() {
               selectedSquare={selected?.square ?? null}
             />
             <div className="side-stack">
-              <StageDetails activeStage={activeStage} />
               <MoveRanking
                 moves={analysis.rankedMoves}
                 probeChoice={analysis.probeChoice}
