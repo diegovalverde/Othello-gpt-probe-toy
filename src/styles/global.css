@@ -34,8 +34,7 @@ body {
 }
 
 button,
-input,
-select {
+input {
   font: inherit;
 }
 
@@ -47,7 +46,7 @@ select {
 
 .app-header {
   display: grid;
-  grid-template-columns: minmax(270px, 0.72fr) minmax(360px, 1.7fr) minmax(310px, 0.9fr);
+  grid-template-columns: minmax(270px, 0.72fr) minmax(360px, 1.7fr);
   gap: 20px;
   align-items: start;
   margin-bottom: 14px;
@@ -94,9 +93,7 @@ select {
   font-weight: 650;
 }
 
-.move-form label,
-.select-label,
-.toggle-label {
+.move-form label {
   font-weight: 700;
 }
 
@@ -142,37 +139,6 @@ select {
   margin: 8px 0 16px;
   color: var(--muted);
   font-weight: 700;
-}
-
-.header-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: stretch;
-}
-
-.select-label,
-.toggle-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.78);
-  padding: 12px 14px;
-}
-
-.select-label select {
-  width: 100%;
-  border: 0;
-  background: transparent;
-  color: var(--text);
-  outline: none;
-}
-
-.toggle-label {
-  cursor: pointer;
-  color: var(--muted);
 }
 
 .status-strip {
@@ -739,11 +705,6 @@ h2 {
   .app-header,
   .main-grid {
     grid-template-columns: 1fr;
-  }
-
-  .header-controls {
-    flex-direction: row;
-    flex-wrap: wrap;
   }
 
   .rail-track {

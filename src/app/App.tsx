@@ -1,17 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { Activity, Play, SlidersHorizontal } from "lucide-react";
+import { Activity, Play } from "lucide-react";
 import { BoardView } from "../components/BoardView";
 import { ProbeRail } from "../components/ProbeRail";
 import { SquareInspector } from "../components/SquareInspector";
 import { BrowserOnnxRuntime, DEFAULT_INPUT } from "../inference/browserRuntime";
 import { runAnalysis } from "../inference/runtime";
-import type { BoardSquareView, LegalitySource, ProbeAnalysis } from "../types/probe";
+import type { BoardSquareView, ProbeAnalysis } from "../types/probe";
 
 export function App() {
   const [moveString, setMoveString] = useState(DEFAULT_INPUT);
   const [submittedMoveString, setSubmittedMoveString] = useState(DEFAULT_INPUT);
-  const [legalitySource, setLegalitySource] = useState<LegalitySource>("direct_post6");
-  const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const showDiagnostics = true;
   const [selectedSquare, setSelectedSquare] = useState<BoardSquareView | null>(null);
   const [activeStage, setActiveStage] = useState("post7");
   const [analysis, setAnalysis] = useState<ProbeAnalysis | null>(null);
@@ -23,7 +22,7 @@ export function App() {
   useEffect(() => {
     let cancelled = false;
     setIsRunning(true);
-    runAnalysis(runtime, submittedMoveString, legalitySource).then((result) => {
+    runAnalysis(runtime, submittedMoveString, "direct_post6").then((result) => {
       if (cancelled) {
         return;
       }
@@ -34,7 +33,7 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [runtime, submittedMoveString, legalitySource]);
+  }, [runtime, submittedMoveString]);
 
   const selected =
     selectedSquare && analysis?.board.find((square) => square.square === selectedSquare.square)
@@ -82,27 +81,6 @@ export function App() {
           </div>
           {error && <p className="input-error">{error}</p>}
         </form>
-        <div className="header-controls">
-          <label className="select-label">
-            <SlidersHorizontal size={16} />
-            <select
-              value={legalitySource}
-              onChange={(event) => setLegalitySource(event.target.value as LegalitySource)}
-            >
-              <option value="direct_post6">direct post6</option>
-              <option value="ray_max">ray max</option>
-              <option value="simulator">simulator</option>
-            </select>
-          </label>
-          <label className="toggle-label">
-            <input
-              type="checkbox"
-              checked={showDiagnostics}
-              onChange={(event) => setShowDiagnostics(event.target.checked)}
-            />
-            logits diagnostic
-          </label>
-        </div>
       </header>
 
       {isRunning && <p className="runtime-loading">Loading ONNX runtime and running probes...</p>}
