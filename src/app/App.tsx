@@ -134,6 +134,8 @@ export function App() {
             )}
           </section>
 
+          <ProbeRail activeStage={activeStage} onStageSelect={setActiveStage} />
+
           <div className="main-grid">
             <BoardView
               board={analysis.board}
@@ -160,8 +162,6 @@ export function App() {
               <SquareInspector square={selected} showDiagnostics={showDiagnostics} />
             </div>
           </div>
-
-          <ProbeRail activeStage={activeStage} onStageSelect={setActiveStage} />
         </>
       )}
     </main>
