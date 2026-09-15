@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Activity } from "lucide-react";
 import { BoardView } from "../components/BoardView";
 import { ProbeRail } from "../components/ProbeRail";
+import { ProbeVisualization } from "../components/ProbeVisualization";
 import { SquareInspector } from "../components/SquareInspector";
 import { BrowserOnnxRuntime, DEFAULT_INPUT } from "../inference/browserRuntime";
 import { runAnalysis } from "../inference/runtime";
@@ -112,6 +113,7 @@ export function App() {
               showLogitRanks={activeStage === "post7" && showDiagnostics}
             />
             <div className="side-stack">
+              <ProbeVisualization activeStage={activeStage} board={analysis.board} />
               <SquareInspector square={selected} showDiagnostics={showDiagnostics} />
             </div>
           </div>
