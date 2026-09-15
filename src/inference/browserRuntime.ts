@@ -9,7 +9,11 @@ import {
 } from "../othello/othello";
 import * as ort from "onnxruntime-web/wasm";
 
-const MODEL_URL = "/model/othello-gpt-activations.onnx";
+const ASSET_BASE = import.meta.env.BASE_URL;
+const MODEL_PART_URLS = [
+  `${ASSET_BASE}model/othello-gpt-activations.onnx.part-aa`,
+  `${ASSET_BASE}model/othello-gpt-activations.onnx.part-ab`,
+];
 const DEFAULT_INPUT = "F5 D6 C3 D3 C4 F4 E3";
 const DIRECT_POST6_THRESHOLD = 0.9969209432601929;
 const RAY_MAX_POST6_THRESHOLD = 0.8941226601600647;
@@ -28,14 +32,33 @@ let sessionPromise: Promise<ort.InferenceSession> | null = null;
 ort.env.wasm.numThreads = 1;
 ort.env.wasm.proxy = false;
 ort.env.wasm.wasmPaths = {
-  wasm: "/ort/ort-wasm-simd-threaded.wasm",
+  wasm: `${ASSET_BASE}ort/ort-wasm-simd-threaded.wasm`,
 };
+
+async function loadModel(): Promise<Uint8Array> {
+  const parts = await Promise.all(
+    MODEL_PART_URLS.map(async (url) => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Unable to load model asset: ${response.status} ${response.statusText}`);
+      }
+      return new Uint8Array(await response.arrayBuffer());
+    }),
+  );
+  const model = new Uint8Array(parts.reduce((length, part) => length + part.length, 0));
+  let offset = 0;
+  for (const part of parts) {
+    model.set(part, offset);
+    offset += part.length;
+  }
+  return model;
+}
 
 function getSession(): Promise<ort.InferenceSession> {
   if (sessionPromise == null) {
-    sessionPromise = ort.InferenceSession.create(MODEL_URL, {
-      executionProviders: ["wasm"],
-    });
+    sessionPromise = loadModel().then((model) =>
+      ort.InferenceSession.create(model, { executionProviders: ["wasm"] }),
+    );
   }
   return sessionPromise;
 }

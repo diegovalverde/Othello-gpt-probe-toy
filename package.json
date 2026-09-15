@@ -7,7 +7,7 @@
     "predev": "node scripts/copy_ort_wasm.mjs",
     "dev": "vite",
     "prebuild": "node scripts/copy_ort_wasm.mjs",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && node scripts/remove_full_onnx_from_dist.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
